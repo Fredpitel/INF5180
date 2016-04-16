@@ -66,10 +66,10 @@ DROP TABLE ParametresGeneraux
 CREATE TABLE ParametresGeneraux(
 	nbTentativeMax		NUMBER(3)
 						CONSTRAINT nn_PG_nbTenMax NOT NULL
-						CONSTRAINT ck_PG_nbTenMax(nbTentativeMax >= 0),
+						CONSTRAINT ck_PG_nbTenMax CHECK(nbTentativeMax >= 0),
 	tempsBlocage		NUMBER(3)
 						CONSTRAINT nn_PG_tempsBloc NOT NULL
-						CONSTRAINT ck_PG_tempsBloc(tempsBlocage >= 0)
+						CONSTRAINT ck_PG_tempsBloc CHECK(tempsBlocage >= 0)
 )
 /
 -- Insertion avec des valeurs bidons.
@@ -89,7 +89,7 @@ CREATE TABLE SessionUniversitaire(
 						CONSTRAINT ck_SessionUni_saison CHECK(saison IN ('Hiver', 'Automne', 'Ete')),
 	annee				NUMBER(4)
 						CONSTRAINT nn_SessionUni_annee NOT NULL
-						CONSTRAINT ck_SessionUni_annee(annee >= 0),
+						CONSTRAINT ck_SessionUni_annee CHECK(annee >= 0),
 	dateLimiteTrans		DATE
 						CONSTRAINT nn_SessionUni_dLimite NOT NULL
 )
@@ -121,10 +121,10 @@ CREATE TABLE Cours(
 						CONSTRAINT ck_Cours_sigle CHECK(REGEXP_LIKE(sigle, '^[a-zA-Z]{3}[0-9]{4}$'))
 						CONSTRAINT un_Cours_sigle UNIQUE,
 	titre				VARCHAR2(50)
-						CONSTRAINT nn_Cours_titre NOT NULL
+						CONSTRAINT nn_Cours_titre NOT NULL,
 	cycleUni			NUMBER(1)
 						CONSTRAINT nn_Cours_cycleUni NOT NULL
-						CONSTRAINT ck_Cours_cycleUni(cycleUni > 0),
+						CONSTRAINT ck_Cours_cycleUni CHECK(cycleUni > 0),
 	idDepartement		NUMBER
 						CONSTRAINT nn_Cours_idDepartement NOT NULL
 						CONSTRAINT fk_Cours_idDepartement REFERENCES Departement(idDepartement)
@@ -180,7 +180,7 @@ CREATE TABLE GroupeCours(
 						CONSTRAINT pk_GroupeCours_id PRIMARY KEY,
 	noGroupe			NUMBER(2)
 						CONSTRAINT nn_GroupeCours_noGroupe NOT NULL
-						CONSTRAINT ck_GroupeCours_noGroupe(noGroupe >= 0),
+						CONSTRAINT ck_GroupeCours_noGroupe CHECK(noGroupe >= 0),
 	statutTransfertNote	CHAR(6)
 						CONSTRAINT nn_GroupeCours_statutTrans NOT NULL
 						CONSTRAINT ck_GroupeCours_statutTrans CHECK(statutTransfertNote IN ('non', 'depart', 'Traite')),
@@ -229,9 +229,9 @@ CREATE TABLE Etudiant(
 						CONSTRAINT un_Etudiant_codePermanent UNIQUE
 						CONSTRAINT ck_Etudiant_codePermanent CHECK(REGEXP_LIKE(codePermanent, '^[A-Z]{4}[0-9]{8}$')),
 	nom					VARCHAR2(50)
-						CONSTRAINT nn_Etudiant_nom NOT NULL
+						CONSTRAINT nn_Etudiant_nom NOT NULL,
 	prenom				VARCHAR2(50)
-						CONSTRAINT nn_Etudiant_prenom NOT NULL
+						CONSTRAINT nn_Etudiant_prenom NOT NULL,
 	nip					CHAR(5)
 						CONSTRAINT nn_Etudiant_nip NOT NULL
 						CONSTRAINT ck_Etudiant_nip CHECK(REGEXP_LIKE(nip, '^[0-9]{5}$')),
@@ -256,8 +256,8 @@ CREATE TABLE StatusInscription(
 						CONSTRAINT pk_StatusIns_id PRIMARY KEY,
 	codeStatus			CHAR(3)
 						CONSTRAINT nn_StatusIns_codeStatus NOT NULL
-						CONSTRAINT un_StatusIns_codeStatus UNIQUE
-	description			VARCHAR2
+						CONSTRAINT un_StatusIns_codeStatus UNIQUE,
+	description			VARCHAR2(100)
 						CONSTRAINT nn_StatusIns_description NOT NULL
 )
 /
@@ -320,7 +320,7 @@ CREATE TABLE Evaluation(
 						CONSTRAINT ck_Evaluation_noteMaximal CHECK(noteMaximal >= 0.00 AND noteMaximal <= 100.00),
 	statusDiffusion		CHAR(1)
 						CONSTRAINT nn_Evaluation_diffusion NOT NULL
-						CONSTRAINT ck_Evaluation_diffusion CHECK(diffusionNoteFinale IN ('O', 'N')),
+						CONSTRAINT ck_Evaluation_diffusion CHECK(statusDiffusion IN ('O', 'N')),
 	ordreApparition		NUMBER(2)
 						CONSTRAINT nn_Evaluation_ordre NOT NULL
 						CONSTRAINT ck_Evaluation_ordre CHECK(ordreApparition > 0),

@@ -323,6 +323,7 @@ CREATE TABLE Evaluation(
 						CONSTRAINT ck_Evaluation_diffusion CHECK(statusDiffusion IN ('O', 'N')),
 	ordreApparition		NUMBER(2)
 						CONSTRAINT nn_Evaluation_ordre NOT NULL
+            CONSTRAINT un_Evaluation_ordre UNIQUE
 						CONSTRAINT ck_Evaluation_ordre CHECK(ordreApparition > 0),
 	idGroupeCours		NUMBER
 						CONSTRAINT nn_Evaluation_idGroupeCours NOT NULL

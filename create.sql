@@ -5,7 +5,7 @@
 --------------------------------
 -- Transformation des types 
 --------------------------------
--- EntierPositif transformé en 
+-- EntierPositif transformé en
 --			NUMBER(n) ... CHECK(value >= 0)
 -- Saison transformé en
 -- 			CHAR(7) ... CHECK(value IN ('Hiver', 'Automne', 'Ete'))
@@ -124,7 +124,7 @@ CREATE TABLE Cours(
 						CONSTRAINT nn_Cours_titre NOT NULL,
 	cycleUni			NUMBER(1)
 						CONSTRAINT nn_Cours_cycleUni NOT NULL
-						CONSTRAINT ck_Cours_cycleUni CHECK(cycleUni > 0),
+						CONSTRAINT ck_Cours_cycleUni CHECK(cycleUni > 0 AND cycleUni <= 3),
 	idDepartement		NUMBER
 						CONSTRAINT nn_Cours_idDepartement NOT NULL
 						CONSTRAINT fk_Cours_idDepartement REFERENCES Departement(idDepartement)
@@ -183,7 +183,7 @@ CREATE TABLE GroupeCours(
 						CONSTRAINT ck_GroupeCours_noGroupe CHECK(noGroupe >= 0),
 	statutTransfertNote	CHAR(6)
 						CONSTRAINT nn_GroupeCours_statutTrans NOT NULL
-						CONSTRAINT ck_GroupeCours_statutTrans CHECK(statutTransfertNote IN ('non', 'depart', 'Traite')),
+						CONSTRAINT ck_GroupeCours_statutTrans CHECK(statutTransfertNote IN ('Non', 'Depart', 'Traite')),
 	diffusionNoteFinale	CHAR(1)
 						CONSTRAINT nn_GroupeCours_diffusion NOT NULL
 						CONSTRAINT ck_GroupeCours_diffusion CHECK(diffusionNoteFinale IN ('O', 'N')),
@@ -237,7 +237,7 @@ CREATE TABLE Etudiant(
 						CONSTRAINT ck_Etudiant_nip CHECK(REGEXP_LIKE(nip, '^[0-9]{5}$')),
 	nbTentative			NUMBER(3)
 						CONSTRAINT nn_Etudiant_nbTentative NOT NULL
-						CONSTRAINT ck_Etudiant_nbTentative CHECK(nbTentative >= 0),
+						CONSTRAINT ck_Etudiant_nbTentative CHECK(nbTentative >= 0 AND nbTentative <= 5),
 	tempsEchec			DATE
 						CONSTRAINT n_Etudiant_nbTentative NULL,
 	idProgramme			NUMBER
@@ -289,16 +289,16 @@ CREATE TABLE InscriptionCours(
 						CONSTRAINT pk_InscripCours_id PRIMARY KEY,
 	idStatusInscription	NUMBER
 						CONSTRAINT nn_InscripCours_idStatus NOT NULL
-						CONSTRAINT pk_InscripCours_idStatus REFERENCES StatusInscription(idStatusInscription),
+						CONSTRAINT fk_InscripCours_idStatus REFERENCES StatusInscription(idStatusInscription),
 	idEtudiant			NUMBER
 						CONSTRAINT nn_InscripCours_idEtudiant NOT NULL
-						CONSTRAINT pk_InscripCours_idEtudiant REFERENCES Etudiant(idEtudiant),
+						CONSTRAINT fk_InscripCours_idEtudiant REFERENCES Etudiant(idEtudiant),
 	idGroupeCours		NUMBER
 						CONSTRAINT nn_InscripCours_idGroupeCours NOT NULL
-						CONSTRAINT pk_InscripCours_idGroupeCours REFERENCES GroupeCours(idGroupeCours),
+						CONSTRAINT fk_InscripCours_idGroupeCours REFERENCES GroupeCours(idGroupeCours),
 	idNoteLettree		NUMBER
 						CONSTRAINT n_InscripCours_idNoteLettree NULL
-						CONSTRAINT pk_InscripCours_idNoteLettree REFERENCES NoteLettree(idNoteLettree)
+						CONSTRAINT fk_InscripCours_idNoteLettree REFERENCES NoteLettree(idNoteLettree)
 )
 /
 
@@ -360,6 +360,7 @@ CREATE TABLE Borne(
 						CONSTRAINT pk_Borne_id PRIMARY KEY,
 	borneInferieure		NUMBER(5,2)
 						CONSTRAINT nn_Borne_borneInf NOT NULL
+            CONSTRAINT un_Borne_borneInf UNIQUE
 						CONSTRAINT ck_Borne_borneInf CHECK(borneInferieure >= 0.00 AND borneInferieure <= 100.00),
 	idGroupeCours		NUMBER
 						CONSTRAINT nn_Borne_idGroupeCours NOT NULL

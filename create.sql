@@ -13,7 +13,7 @@
 --			CHAR(7) ... CHECK(REGEXP_LIKE(value, '^[a-zA-Z]{3}[0-9]{4}$'))
 -- CodeMS transformé en
 -- 			CHAR(12) ... CHECK(REGEXP_LIKE(value, '^[A-Z]{10}_[A-Z]$'))
--- StatusTransfertNote transformé en
+-- StatutTransfertNote transformé en
 --			CHAR(6) ... CHECK(value IN ('non', 'depart', 'Traite'))
 -- Boolean transformé en
 --			CHAR(1) ... CHECK(value IN ('O', 'N'))
@@ -38,7 +38,7 @@ DROP TABLE InscriptionCours
 /
 DROP TABLE NoteLettree
 /
-DROP TABLE	StatusInscription
+DROP TABLE	StatutInscription
 /
 DROP TABLE Etudiant
 /
@@ -247,18 +247,18 @@ CREATE TABLE Etudiant(
 /
 
 ----------------------------------------------
--- TABLE StatusInscription
+-- TABLE StatutInscription
 ----------------------------------------------
 
-CREATE TABLE StatusInscription(
-	idStatusInscription	NUMBER
-						CONSTRAINT nn_StatusIns_id NOT NULL
-						CONSTRAINT pk_StatusIns_id PRIMARY KEY,
-	codeStatus			CHAR(3)
-						CONSTRAINT nn_StatusIns_codeStatus NOT NULL
-						CONSTRAINT un_StatusIns_codeStatus UNIQUE,
+CREATE TABLE StatutInscription(
+	idStatutInscription	NUMBER
+						CONSTRAINT nn_StatutIns_id NOT NULL
+						CONSTRAINT pk_StatutIns_id PRIMARY KEY,
+	codeStatut			CHAR(3)
+						CONSTRAINT nn_StatutIns_codeStatus NOT NULL
+						CONSTRAINT un_StatutIns_codeStatus UNIQUE,
 	description			VARCHAR2(100)
-						CONSTRAINT nn_StatusIns_description NOT NULL
+						CONSTRAINT nn_StatutIns_description NOT NULL
 )
 /
 
@@ -287,9 +287,9 @@ CREATE TABLE InscriptionCours(
 	idInscriptionCours	NUMBER
 						CONSTRAINT nn_InscripCours_id NOT NULL
 						CONSTRAINT pk_InscripCours_id PRIMARY KEY,
-	idStatusInscription	NUMBER
-						CONSTRAINT nn_InscripCours_idStatus NOT NULL
-						CONSTRAINT fk_InscripCours_idStatus REFERENCES StatusInscription(idStatusInscription),
+	idStatutInscription	NUMBER
+						CONSTRAINT nn_InscripCours_idStatut NOT NULL
+						CONSTRAINT fk_InscripCours_idStatut REFERENCES StatutInscription(idStatutInscription),
 	idEtudiant			NUMBER
 						CONSTRAINT nn_InscripCours_idEtudiant NOT NULL
 						CONSTRAINT fk_InscripCours_idEtudiant REFERENCES Etudiant(idEtudiant),
@@ -323,7 +323,6 @@ CREATE TABLE Evaluation(
 						CONSTRAINT ck_Evaluation_diffusion CHECK(statusDiffusion IN ('O', 'N')),
 	ordreApparition		NUMBER(2)
 						CONSTRAINT nn_Evaluation_ordre NOT NULL
-            CONSTRAINT un_Evaluation_ordre UNIQUE
 						CONSTRAINT ck_Evaluation_ordre CHECK(ordreApparition > 0),
 	idGroupeCours		NUMBER
 						CONSTRAINT nn_Evaluation_idGroupeCours NOT NULL

@@ -371,3 +371,36 @@ CREATE TABLE Borne(
 						CONSTRAINT pk_Borne_idNoteLettree REFERENCES NoteLettree(idNoteLettree)
 )
 /
+
+----------------------------------------------
+-- TABLE InterfaceRegistrariat
+----------------------------------------------
+
+CREATE TABLE InterfaceRegistrariat(
+	idIntRegistrariat	NUMBER
+						CONSTRAINT nn_IntRegist_id NOT NULL
+						CONSTRAINT pk_IntRegist_id PRIMARY KEY,
+	dateChangement		DATE
+						CONSTRAINT nn_IntRegist_dateChange NOT NULL,
+	natureChangement	CHAR(5)
+						CONSTRAINT nn_IntRegist_natureChange NOT NULL
+						CONSTRAINT ck_IntRegist_natureChange CHECK(natureChangement IN('modif', 'ajout')),
+	codePermanent		CHAR(12)
+						CONSTRAINT nn_IntRegist_codePerm NOT NULL
+						CONSTRAINT ck_IntRegist_codePerm CHECK(REGEXP_LIKE(codePermanent, '^[A-Z]{4}[0-9]{8}$')),
+	sigleCours			CHAR(7)
+						CONSTRAINT nn_IntRegist_sigle NOT NULL
+						CONSTRAINT ck_IntRegist_sigle CHECK(REGEXP_LIKE(sigleCours, '^[a-zA-Z]{3}[0-9]{4}$')),
+	noGroupe			NUMBER(2)
+						CONSTRAINT nn_IntRegist_noGroupe NOT NULL
+						CONSTRAINT ck_IntRegist_noGroupe CHECK(noGroupe >= 0),
+	saison				CHAR(7)
+						CONSTRAINT nn_IntRegist_saison NOT NULL
+						CONSTRAINT ck_IntRegist_saison CHECK(saison IN ('Hiver', 'Automne', 'Ete')),
+	annee				NUMBER(4)
+						CONSTRAINT nn_IntRegist_annee NOT NULL
+						CONSTRAINT ck_IntRegist_annee CHECK(annee >= 0),
+	noteLettree			CHAR(2)
+						CONSTRAINT nn_NoteLettree_lettre NOT NULL
+)
+/

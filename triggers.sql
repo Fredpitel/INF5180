@@ -302,17 +302,16 @@ END trBorne_CIU_borneCoherentes;
 
 CREATE OR REPLACE TRIGGER trEvaluation_BIR_ordreEval
 BEFORE INSERT ON Evaluation
-REFERENCING NEW AS ligneApres
 FOR EACH ROW
 DECLARE v_ordreMax Evaluation.ordreApparition%TYPE;
 BEGIN
   SELECT MAX(ordreApparition) INTO  v_ordreMax
   FROM Evaluation
-  WHERE idGroupeCours = :ligneApres.idGroupeCours;
+  WHERE idGroupeCours = :NEW.idGroupeCours;
   
   IF(v_ordreMax IS NULL)
-  THEN   :ligneApres.ordreApparition := 1;
-  ELSE   :ligneApres.ordreApparition := v_ordreMax + 1;
+  THEN   :NEW.ordreApparition := 1;
+  ELSE   :NEW.ordreApparition := v_ordreMax + 1;
   END IF;
   
 END trEvaluation_BIR_ordreEval;
@@ -345,7 +344,7 @@ END trInscriptionCours_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trInscriptionCours_BUS_idEtud
 BEFORE UPDATE OF idEtudiant ON InscriptionCours
 BEGIN
-RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
+  RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
 END trInscriptionCours_BIR_doublon;
 /
 

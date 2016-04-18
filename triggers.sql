@@ -318,6 +318,42 @@ END trEvaluation_BIR_ordreEval;
 /
 
 -----------------------------------------------------------------------------------------------
+-- Empêche la modification des évaluations une fois les notes transférées
+-----------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trEvaluation_BIUR_transfert
+BEFORE INSERT OR UPDATE ON Evaluation
+FOR EACH ROW
+DECLARE 
+  v_statut GroupeCours.statutTransfertNote%TYPE;
+BEGIN
+  SELECT statutTransfertNote INTO v_statut
+  FROM GroupeCours
+  WHERE idGroupeCours = :NEW.idGroupeCours;
+  
+  IF(v_statut <> 'Non')
+  THEN RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  END IF;
+END trEvaluation_BIUR_transfert;
+/
+
+CREATE OR REPLACE TRIGGER trEvaluation_BDR_transfert
+BEFORE DELETE ON Evaluation
+FOR EACH ROW
+DECLARE 
+  v_statut GroupeCours.statutTransfertNote%TYPE;
+BEGIN
+  SELECT statutTransfertNote INTO v_statut
+  FROM GroupeCours
+  WHERE idGroupeCours = :OLD.idGroupeCours;
+  
+  IF(v_statut <> 'Non')
+  THEN RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  END IF;
+END trEvaluation_BDR_transfert;
+/
+
+-----------------------------------------------------------------------------------------------
 -- Vérifie qu'un étudiant ne s'inscrit pas deux fois au même groupe-cours
 -----------------------------------------------------------------------------------------------
 
@@ -331,7 +367,7 @@ BEGIN
   WHERE idEtudiant = :NEW.idEtudiant
   AND idGroupeCours = :NEW.idGroupeCours;
   
-  RAISE_APPLICATION_ERROR(-20006, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
+  RAISE_APPLICATION_ERROR(-20007, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
 
   EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
 END trInscriptionCours_BIR_doublon;
@@ -344,7 +380,7 @@ END trInscriptionCours_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trInscriptionCours_BUS_idEtud
 BEFORE UPDATE OF idEtudiant ON InscriptionCours
 BEGIN
-  RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
+  RAISE_APPLICATION_ERROR(-20008, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
 END trInscriptionCours_BIR_doublon;
 /
 
@@ -373,7 +409,27 @@ BEGIN
   WHERE idEmploye = v_idEmploye;
 
   IF(v_depCours <> v_depEnseignant)
-  THEN RAISE_APPLICATION_ERROR(-20008, 'Un enseignant doit donner un cours rattaché à son département.');
+  THEN RAISE_APPLICATION_ERROR(-20009, 'Un enseignant doit donner un cours rattaché à son département.');
   END IF;
 END trGrCours_BIUR_enseignantDep;
+/
+
+--------------------------------------------------------------------------------------------------------------------
+-- Vérifie qu'un résultat d'évaluation ne dépasse pas la note maximale de cette évaluation
+--------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trResultatEval_BIUR_noteMax
+BEFORE INSERT OR UPDATE OF note ON ResultatEvaluation
+FOR EACH ROW
+DECLARE
+v_noteMax Evaluation.noteMaximal%TYPE;
+BEGIN
+  SELECT noteMaximal INTO v_noteMax
+  FROM Evaluation
+  WHERE idEvaluation = :NEW.idEvaluation;
+  
+  IF(:NEW.note > v_noteMax)
+  THEN RAISE_APPLICATION_ERROR(-20010, 'La note entrée dépasse la note maximale pour cette évaluation.');
+  END IF;
+END trResultatEval_BIUR_noteMax;
 /

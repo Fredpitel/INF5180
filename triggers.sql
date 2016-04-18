@@ -118,7 +118,6 @@ END;
 -- Empêche la modification des clés primaires
 ------------------------------------------------------------
 
-
 CREATE OR REPLACE TRIGGER trSessionUni_BUR_PK
 BEFORE UPDATE OF idSessionUni ON SessionUniversitaire
 FOR EACH ROW
@@ -239,15 +238,22 @@ BEGIN
 END;
 /
 
------------------------------------------------------------------------------------------
--- Garantie que ParametresGeneraux ne contient qu'une seule entrée
-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-- Garantie que ParametresGeneraux contient une et une seule entrée
+--------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TRIGGER trParamGen_BIS_unique
 BEFORE INSERT ON ParametresGeneraux
 BEGIN
   RAISE_APPLICATION_ERROR(-20001, 'Il est interdit d''insérer de nouvelles valeurs dans cette table. ');
 END trParamGen_BIS_unique;
+/
+
+CREATE OR REPLACE TRIGGER trParamGen_BDS_unique
+BEFORE DELETE ON ParametresGeneraux
+BEGIN
+  RAISE_APPLICATION_ERROR(-20002, 'Il est interdit de supprimer les valeurs dans cette table. ');
+END trParamGen_BDS_unique;
 /
 
 ---------------------------------------------------------------------------
@@ -275,15 +281,15 @@ BEGIN
     WHERE idNoteLettree = rt_borne.idNoteLettree;
     
     IF(rt_borne.borneInferieure > :NEW.borneInferieure AND v_valeurNoteAutre < v_valeurNote AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
-    THEN RAISE_APPLICATION_ERROR(-20002, 'La valeur de la note lettrée d''une borne inférieure ne peut pas dépasser la valeur de la note lettrée d''une borne supérieure.');
+    THEN RAISE_APPLICATION_ERROR(-20003, 'La valeur de la note lettrée d''une borne inférieure ne peut pas dépasser la valeur de la note lettrée d''une borne supérieure.');
     END IF;
     
     IF(rt_borne.borneInferieure < :NEW.borneInferieure AND v_valeurNoteAutre > v_valeurNote AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
-    THEN RAISE_APPLICATION_ERROR(-20003, 'La valeur de la note lettrée d''une borne supérieure ne peut pas être plus basse que la valeur de la note lettrée d''une borne inférieure.');
+    THEN RAISE_APPLICATION_ERROR(-20004, 'La valeur de la note lettrée d''une borne supérieure ne peut pas être plus basse que la valeur de la note lettrée d''une borne inférieure.');
     END IF;
     
     IF(rt_borne.borneInferieure = :NEW.borneInferieure AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
-    THEN RAISE_APPLICATION_ERROR(-20004, 'Une borne de cette valeur existe déjà pour ce cours.');
+    THEN RAISE_APPLICATION_ERROR(-20005, 'Une borne de cette valeur existe déjà pour ce cours.');
     END IF;
   END LOOP;
 END BEFORE EACH ROW;
@@ -326,7 +332,7 @@ BEGIN
   WHERE idEtudiant = :NEW.idEtudiant
   AND idGroupeCours = :NEW.idGroupeCours;
   
-  RAISE_APPLICATION_ERROR(-20005, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
+  RAISE_APPLICATION_ERROR(-20006, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
 
   EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
 END trInscriptionCours_BIR_doublon;
@@ -339,7 +345,7 @@ END trInscriptionCours_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trInscriptionCours_BUS_idEtud
 BEFORE UPDATE OF idEtudiant ON InscriptionCours
 BEGIN
-RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
+RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
 END trInscriptionCours_BIR_doublon;
 /
 
@@ -368,7 +374,7 @@ BEGIN
   WHERE idEmploye = v_idEmploye;
 
   IF(v_depCours <> v_depEnseignant)
-  THEN RAISE_APPLICATION_ERROR(-20007, 'Un enseignant doit donner un cours rattaché à son département.');
+  THEN RAISE_APPLICATION_ERROR(-20008, 'Un enseignant doit donner un cours rattaché à son département.');
   END IF;
 END trGrCours_BIUR_enseignantDep;
 /

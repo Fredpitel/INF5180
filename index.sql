@@ -121,24 +121,24 @@
 --
 -- Affichage des statistiques d'un groupe
 --
--- SELECT
---	AVG(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
---		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS moyenneGroupe,
---	STDDEV(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
---		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS ecartTypeGroupe
--- FROM
--- 	GroupeCours
--- 	INNER JOIN Cours ON GroupeCours.idCours = Cours.idCours
--- 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
--- 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
--- 	INNER JOIN ResultatEvaluation ON InscriptionCours.idInscriptionCours = ResultatEvaluation.idInscriptionCours
--- WHERE
--- 	Cours.sigle = 'INF5180' AND
--- 	GroupeCours.noGroupe = 40 AND
--- 	SessionUniversitaire.saison = 'Hiver' AND
--- 	SessionUniversitaire.annee = 2016 AND
---	Evaluation.statusDiffusion = 'O'
--- /
+ SELECT
+	AVG(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
+	OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS moyenneGroupe,
+	STDDEV(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
+		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS ecartTypeGroupe
+ FROM
+ 	GroupeCours
+ 	INNER JOIN Cours ON GroupeCours.idCours = Cours.idCours
+ 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
+ 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
+ 	INNER JOIN ResultatEvaluation ON InscriptionCours.idInscriptionCours = ResultatEvaluation.idInscriptionCours
+ WHERE
+ 	Cours.sigle = 'INF5180' AND
+ 	GroupeCours.noGroupe = 40 AND
+ 	SessionUniversitaire.saison = 'Hiver' AND
+ 	SessionUniversitaire.annee = 2016 AND
+	Evaluation.statusDiffusion = 'O'
+/
 ----------------------------------------
 
 CREATE INDEX idx_Etudiant_codePermanent ON Etudiant(codePermanent)

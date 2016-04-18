@@ -258,3 +258,13 @@ VALUES(2, 'TP2', 15.00, 100.00, 'N', 5, 1)
 INSERT INTO Evaluation
 VALUES(3, 'TP1', 15.00, 100.00, 'N', 5, 2)
 /
+
+INSERT INTO Evaluation
+VALUES(4, 'TP3', 85.00, 100.00, 'N', 5, 1)
+/
+
+UPDATE Evaluation
+SET ponderation = 85.00
+WHERE idEvaluation = 2
+/
+

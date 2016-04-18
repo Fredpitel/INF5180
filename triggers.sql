@@ -261,44 +261,102 @@ END trParamGen_BDS_unique;
 ---------------------------------------------------------------------------
 
 CREATE OR REPLACE TRIGGER trBorne_CIU_borneCoherentes
-FOR INSERT OR UPDATE OF borneInferieure ON Borne
-COMPOUND TRIGGER
-  CURSOR 	cu_borne IS 
-		SELECT borneInferieure, idGroupeCours, idNoteLettree
-		FROM Borne;
+BEFORE INSERT OR UPDATE OF borneInferieure ON Borne
+FOR EACH ROW
+DECLARE
   v_valeurNote  NoteLettree.valeur%TYPE;
   v_valeurNoteAutre NoteLettree.valeur%TYPE;
-BEFORE EACH ROW IS
 BEGIN
   SELECT valeur INTO v_valeurNote
   FROM NoteLettree
   WHERE idNoteLettree = :NEW.idNoteLettree;
-
-  FOR rt_borne IN cu_borne
+  
+  FOR borne IN (SELECT borneInferieure, idNoteLettree
+                           FROM Borne
+                           WHERE idGroupeCours = :NEW.idGroupeCours)
   LOOP
     SELECT valeur INTO v_valeurNoteAutre
     FROM NoteLettree
-    WHERE idNoteLettree = rt_borne.idNoteLettree;
+    WHERE idNoteLettree = borne.idNoteLettree;
     
-    IF(rt_borne.borneInferieure > :NEW.borneInferieure AND v_valeurNoteAutre < v_valeurNote AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
+    IF(borne.borneInferieure > :NEW.borneInferieure AND v_valeurNoteAutre < v_valeurNote)
     THEN RAISE_APPLICATION_ERROR(-20003, 'La valeur de la note lettrée d''une borne inférieure ne peut pas dépasser la valeur de la note lettrée d''une borne supérieure.');
     END IF;
     
-    IF(rt_borne.borneInferieure < :NEW.borneInferieure AND v_valeurNoteAutre > v_valeurNote AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
+    IF(borne.borneInferieure < :NEW.borneInferieure AND v_valeurNoteAutre > v_valeurNote)
     THEN RAISE_APPLICATION_ERROR(-20004, 'La valeur de la note lettrée d''une borne supérieure ne peut pas être plus basse que la valeur de la note lettrée d''une borne inférieure.');
     END IF;
     
-    IF(rt_borne.borneInferieure = :NEW.borneInferieure AND rt_borne.idGroupeCours = :NEW.idGroupeCours)
+    IF(borne.borneInferieure = :NEW.borneInferieure)
     THEN RAISE_APPLICATION_ERROR(-20005, 'Une borne de cette valeur existe déjà pour ce cours.');
     END IF;
   END LOOP;
-END BEFORE EACH ROW;
 END trBorne_CIU_borneCoherentes;
 /
 
------------------------------------------------------------
--- Force l'ordre d'apparition lors de l'insertion
------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+-- Vérifie que la note lettrée peut être utiliser pour un cours selon son cycle
+--------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trBorne_CIU_cycle
+BEFORE INSERT OR UPDATE OF idGroupeCours ON Borne
+FOR EACH ROW
+DECLARE
+  v_idCours Cours.idCours%TYPE;
+  v_cycle Cours.cycleUni%TYPE;
+  v_lettre NoteLettree.lettre%TYPE;
+BEGIN
+  SELECT idCours INTO v_idCours
+  FROM GroupeCours
+  WHERE idGroupeCours = :NEW.idGroupeCours;
+  
+  SELECT cycleUni INTO v_cycle
+  FROM Cours
+  WHERE idCours = v_idCours;
+  
+  SELECT lettre INTO v_lettre
+  FROM NoteLettree
+  WHERE idNoteLettree = :NEW.idNoteLettree;
+  
+  IF(v_cycle > 1 AND (v_lettre = 'C-' OR v_lettre = 'D+' OR v_lettre = 'D'))
+  THEN RAISE_APPLICATION_ERROR(-20006, 'Il est interdit d''attribuer la note lettre "C-", "D+" ou "D" pour ce cours.');
+  END IF;
+END trBorne_CIU_cycle;
+/
+
+-------------------------------------------------------------------------------------------------------------------------------
+-- Vérifie que la somme des pondérations des évaluations d'un groupe cous ne dépasse pas 100.00
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trEvaluation_BUIR_ponderation
+FOR INSERT OR UPDATE OF ponderation ON Evaluation
+COMPOUND TRIGGER
+  TYPE 	ttab_sommePonderation IS 
+		TABLE OF Evaluation.ponderation%TYPE INDEX BY BINARY_INTEGER;
+  CURSOR cu_evaluation IS SELECT SUM(ponderation) AS sommePonderation, idGroupeCours
+                                              FROM Evaluation
+                                              GROUP BY idGroupeCours;
+  tab_sommePonderation ttab_sommePonderation;
+BEFORE STATEMENT IS
+BEGIN
+  	FOR rt_enreg IN cu_evaluation 
+    LOOP
+      tab_sommePonderation(rt_enreg.idGroupeCours) := rt_enreg.sommePonderation;
+	END LOOP;
+END BEFORE STATEMENT;
+BEFORE EACH ROW IS                                               
+BEGIN
+  IF(tab_sommePonderation(:NEW.idGroupeCours) + :NEW.ponderation > 100.00)
+  THEN RAISE_APPLICATION_ERROR(-20007, 'La somme des pondérations des évaluations d''un groupe cours ne peut pas dépasser 100.00');
+  END IF;
+END BEFORE EACH ROW;
+END trEvaluation_BUIR_ponderation;
+/
+
+SHOW ERR;
+---------------------------------------------------------------------------------
+-- Force l'ordre d'apparition lors de l'insertion d'une évaluation
+---------------------------------------------------------------------------------
 
 CREATE OR REPLACE TRIGGER trEvaluation_BIR_ordreEval
 BEFORE INSERT ON Evaluation
@@ -332,7 +390,7 @@ BEGIN
   WHERE idGroupeCours = :NEW.idGroupeCours;
   
   IF(v_statut <> 'Non')
-  THEN RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  THEN RAISE_APPLICATION_ERROR(-20008, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
   END IF;
 END trEvaluation_BIUR_transfert;
 /
@@ -348,7 +406,7 @@ BEGIN
   WHERE idGroupeCours = :OLD.idGroupeCours;
   
   IF(v_statut <> 'Non')
-  THEN RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  THEN RAISE_APPLICATION_ERROR(-20008, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
   END IF;
 END trEvaluation_BDR_transfert;
 /
@@ -367,7 +425,7 @@ BEGIN
   WHERE idEtudiant = :NEW.idEtudiant
   AND idGroupeCours = :NEW.idGroupeCours;
   
-  RAISE_APPLICATION_ERROR(-20007, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
+  RAISE_APPLICATION_ERROR(-20009, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
 
   EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
 END trInscriptionCours_BIR_doublon;
@@ -380,7 +438,7 @@ END trInscriptionCours_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trInscriptionCours_BUS_idEtud
 BEFORE UPDATE OF idEtudiant ON InscriptionCours
 BEGIN
-  RAISE_APPLICATION_ERROR(-20008, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
+  RAISE_APPLICATION_ERROR(-20010, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
 END trInscriptionCours_BIR_doublon;
 /
 
@@ -409,9 +467,31 @@ BEGIN
   WHERE idEmploye = v_idEmploye;
 
   IF(v_depCours <> v_depEnseignant)
-  THEN RAISE_APPLICATION_ERROR(-20009, 'Un enseignant doit donner un cours rattaché à son département.');
+  THEN RAISE_APPLICATION_ERROR(-20011, 'Un enseignant doit donner un cours rattaché à son département.');
   END IF;
 END trGrCours_BIUR_enseignantDep;
+/
+
+------------------------------------------------------------------------------------------------------------------
+-- Vérifie que les notes finales d'un groupe cours sont générées avant d'être transférées
+------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trGrCours_BUR_notesFinales
+BEFORE UPDATE OF statutTransfertNote ON GroupeCours
+FOR EACH ROW
+BEGIN
+  IF(:NEW.statutTransfertNote <> 'Non')
+  THEN
+    FOR note IN (SELECT idNoteLettree
+                           FROM InscriptionCours
+                           WHERE idGroupeCours = :NEW.idGroupeCours)
+    LOOP
+      IF(note.idNoteLettree IS NULL)
+      THEN RAISE_APPLICATION_ERROR(-20012, 'Les notes finales d''un groupe cours doivent être générées avant d''être transférées.');
+      END IF;
+    END LOOP;
+  END IF;
+END trGrCours_BUR_notesFinales;
 /
 
 --------------------------------------------------------------------------------------------------------------------
@@ -429,7 +509,7 @@ BEGIN
   WHERE idEvaluation = :NEW.idEvaluation;
   
   IF(:NEW.note > v_noteMax)
-  THEN RAISE_APPLICATION_ERROR(-20010, 'La note entrée dépasse la note maximale pour cette évaluation.');
+  THEN RAISE_APPLICATION_ERROR(-20013, 'La note entrée dépasse la note maximale pour cette évaluation.');
   END IF;
 END trResultatEval_BIUR_noteMax;
 /

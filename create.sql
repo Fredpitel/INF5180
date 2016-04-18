@@ -430,9 +430,9 @@ CREATE TABLE ResultatEvaluation(
 	note				NUMBER(5,2)
 						CONSTRAINT nn_ResultatEval_note NOT NULL
 						CONSTRAINT ck_ResultatEval_note CHECK(note >= 0.00 AND note <= 100.00),
-	idEtudiant			NUMBER
-						CONSTRAINT nn_ResultatEval_idEtudiant NOT NULL
-						CONSTRAINT pk_ResultatEval_idEtudiant REFERENCES Etudiant(idEtudiant),
+	idInscriptionCours	NUMBER
+						CONSTRAINT nn_ResultatEval_idInscripCours NOT NULL
+						CONSTRAINT pk_ResultatEval_idInscripCours REFERENCES InscriptionCours(idInscriptionCours),
 	idEvaluation		NUMBER
 						CONSTRAINT nn_ResultatEval_idEvaluation NOT NULL
 						CONSTRAINT pk_ResultatEval_idEvaluation REFERENCES Evaluation(idEvaluation)

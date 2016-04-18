@@ -121,6 +121,7 @@
 --
 -- Affichage des statistiques d'un groupe
 --
+<<<<<<< HEAD
  SELECT
 	AVG(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
 	OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS moyenneGroupe,
@@ -139,6 +140,25 @@
  	SessionUniversitaire.annee = 2016 AND
 	Evaluation.statusDiffusion = 'O'
 /
+=======
+-- SELECT
+--	SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
+--		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours) AS note
+-- FROM
+-- 	GroupeCours
+-- 	INNER JOIN Cours ON GroupeCours.idCours = Cours.idCours
+-- 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
+-- 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
+-- 	INNER JOIN ResultatEvaluation ON InscriptionCours.idInscriptionCours = ResultatEvaluation.idInscriptionCours
+-- WHERE
+-- 	Cours.sigle = 'INF5180' AND
+-- 	GroupeCours.noGroupe = 40 AND
+-- 	SessionUniversitaire.saison = 'Hiver' AND
+-- 	SessionUniversitaire.annee = 2016 AND
+--	GroupeCours.diffusionNoteFinale = 'O'
+-- /
+-- Il faut que l'application calcule la moyenne et l'écart type.
+>>>>>>> 608c7580f8ddb5214b80c7c1df3a457540c6d192
 ----------------------------------------
 
 CREATE INDEX idx_Etudiant_codePermanent ON Etudiant(codePermanent)
@@ -155,3 +175,77 @@ CREATE INDEX idx_Evaluation_idGroupe ON Evaluation(idGroupeCours)
 /
 CREATE INDEX idx_ResultatEval_idEvalInscrip ON ResultatEvaluation(idEvaluation, idInscriptionCours)
 /
+
+----------------------------------------
+-- Cas d'utilisation : l'Enseignant spécifie ou modifie les éléments d'évaluation pour un groupe-cours
+--
+-- Consulté les éléments d'évaluation
+--
+-- SELECT
+-- 	Cours.sigle,
+-- 	GroupeCours.noGroupe,
+-- 	SessionUniversitaire.saison,
+-- 	SessionUniversitaire.annee,
+--	Evaluation.titre,
+--	Evaluation.ponderation,
+--	Evaluation.noteMaximal,
+--	Evaluation.statusDiffusion,
+--	Evaluation.ordreApparition
+-- FROM
+--	GroupeCours
+-- 	INNER JOIN Cours ON GroupeCours.idCours = Cours.idCours
+-- 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
+-- 	INNER JOIN Enseignant ON InscriptionCours.idEnseignant = Enseignant.idEnseignant
+-- 	INNER JOIN Employe ON Enseignant.idEmploye = Employe.idEmploye
+-- 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
+-- WHERE
+-- 	Employe.codeMS = 'AAAAAAAAAA_A' AND
+-- 	Cours.sigle = 'INF5180' AND
+-- 	GroupeCours.noGroupe = 40 AND
+-- 	SessionUniversitaire.saison = 'Hiver' AND
+-- 	SessionUniversitaire.annee = 2016
+-- /
+----------------------------------------
+
+CREATE INDEX idx_Employe_codeMS ON Employe(codeMS)
+/
+CREATE INDEX idx_Enseignant_idEmploye ON Enseignant(idEmploye)
+/
+
+----------------------------------------
+-- Cas d'utilisation : l'Enseignant consulte la page d'accueil d'un groupecours
+--
+-- Affichage des étudiant
+--
+-- SELECT
+-- 	Etudiant.codePermanent,
+--	Etudiant.nom,
+-- 	Etudiant.prenom,
+--	StatutInscription.codeStatut,
+-- 	Programme.codeProgramme,
+--	ResultatEvaluation.note,
+-- 	Evaluation.noteMaximal,
+--	Evaluation.ponderation,
+--	NoteLettree.lettre
+-- FROM
+-- 	InscriptionCours
+-- 	INNER JOIN Etudiant ON InscriptionCours.idEtudiant = Etudiant.idEtudiant
+-- 	INNER JOIN Programme ON Etudiant.idProgramme = Programme.idProgramme
+-- 	INNER JOIN GroupeCours ON InscriptionCours.idGroupeCours = GroupeCours.idGroupeCours
+-- 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
+-- 	INNER JOIN Enseignant ON InscriptionCours.idEnseignant = Enseignant.idEnseignant
+-- 	INNER JOIN Employe ON Enseignant.idEmploye = Employe.idEmploye
+-- 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
+-- 	INNER JOIN ResultatEvaluation ON InscriptionCours.idInscriptionCours = ResultatEvaluation.idInscriptionCours
+--	LEFT JOIN NoteLettree ON InscriptionCours.idNoteLettree = NoteLettree.idNoteLettree
+-- WHERE
+-- 	Employe.codeMS = 'AAAAAAAAAA_A' AND
+-- 	Cours.sigle = 'INF5180' AND
+-- 	GroupeCours.noGroupe = 40 AND
+-- 	SessionUniversitaire.saison = 'Hiver' AND
+-- 	SessionUniversitaire.annee = 2016
+-- ORDER BY Etudiant.codePermanent
+-- /
+-- le total de la note pondéré par étudiant est calculé par l'application
+----------------------------------------
+

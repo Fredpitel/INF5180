@@ -27,34 +27,63 @@
 --------------------------------
 -- Destruction des tables
 --------------------------------
-
+DROP TABLE InterfaceRegistrariat
+/
 DROP TABLE Borne
+/
+DROP SEQUENCE seqBorne
 /
 DROP TABLE ResultatEvaluation
 /
+DROP SEQUENCE seqResultatEvaluation
+/
 DROP TABLE Evaluation
+/
+DROP SEQUENCE seqEvaluation
 /
 DROP TABLE InscriptionCours
 /
+DROP SEQUENCE seqInscriptionCours
+/
 DROP TABLE NoteLettree
+/
+DROP SEQUENCE seqNoteLettree
 /
 DROP TABLE	StatutInscription
 /
+DROP SEQUENCE seqStatutInscription
+/
 DROP TABLE Etudiant
+/
+DROP SEQUENCE seqEtudiant
 /
 DROP TABLE Programme
 /
+DROP SEQUENCE seqProgramme
+/
 DROP TABLE GroupeCours
+/
+DROP SEQUENCE seqGroupeCours
 /
 DROP TABLE Enseignant
 /
+DROP SEQUENCE seqEnseignant
+/
 DROP TABLE Employe
+/
+DROP SEQUENCE seqEmploye
 /
 DROP TABLE Cours
 /
+DROP SEQUENCE seqCours
+/
 DROP TABLE Departement
 /
+DROP SEQUENCE seqDepartement
+/
 DROP TABLE SessionUniversitaire
+/
+DROP SEQUENCE seqSessionUniversitaire
 /
 DROP TABLE ParametresGeneraux
 /
@@ -95,6 +124,11 @@ CREATE TABLE SessionUniversitaire(
 )
 /
 
+CREATE SEQUENCE seqSessionUniversitaire
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE Departement
 ----------------------------------------------
@@ -106,6 +140,11 @@ CREATE TABLE Departement(
 	nom					VARCHAR2(50)
 						CONSTRAINT nn_Departement_nom NOT NULL
 )
+/
+
+CREATE SEQUENCE seqDepartement
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -131,6 +170,11 @@ CREATE TABLE Cours(
 )
 /
 
+CREATE SEQUENCE seqCours
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE Employe
 ----------------------------------------------
@@ -152,6 +196,11 @@ CREATE TABLE Employe(
 )
 /
 
+CREATE SEQUENCE seqEmploye
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE Enseignant
 ----------------------------------------------
@@ -168,6 +217,11 @@ CREATE TABLE Enseignant(
 						CONSTRAINT nn_Enseignant_idEmploye NOT NULL
 						CONSTRAINT fk_Enseignant_idEmploye REFERENCES Employe(idEmploye)
 )
+/
+
+CREATE SEQUENCE seqEnseignant
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -199,6 +253,11 @@ CREATE TABLE GroupeCours(
 )
 /
 
+CREATE SEQUENCE seqGroupeCours
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE Programme
 ----------------------------------------------
@@ -214,6 +273,11 @@ CREATE TABLE Programme(
 	titre				VARCHAR2(50)
 						CONSTRAINT nn_Programme_titre NOT NULL
 )
+/
+
+CREATE SEQUENCE seqProgramme
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -246,6 +310,11 @@ CREATE TABLE Etudiant(
 )
 /
 
+CREATE SEQUENCE seqEtudiant
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE StatutInscription
 ----------------------------------------------
@@ -260,6 +329,11 @@ CREATE TABLE StatutInscription(
 	description			VARCHAR2(100)
 						CONSTRAINT nn_StatutIns_description NOT NULL
 )
+/
+
+CREATE SEQUENCE seqStatutInscription
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -277,6 +351,11 @@ CREATE TABLE NoteLettree(
 						CONSTRAINT nn_NoteLettree_valeur NOT NULL
 						CONSTRAINT ck_NoteLettree_valeur CHECK(valeur >= 0.0 AND valeur <= 4.3)
 )
+/
+
+CREATE SEQUENCE seqNoteLettree
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -300,6 +379,11 @@ CREATE TABLE InscriptionCours(
 						CONSTRAINT n_InscripCours_idNoteLettree NULL
 						CONSTRAINT fk_InscripCours_idNoteLettree REFERENCES NoteLettree(idNoteLettree)
 )
+/
+
+CREATE SEQUENCE seqInscriptionCours
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -330,6 +414,11 @@ CREATE TABLE Evaluation(
 )
 /
 
+CREATE SEQUENCE seqEvaluation
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE ResultatEvaluation
 ----------------------------------------------
@@ -350,6 +439,11 @@ CREATE TABLE ResultatEvaluation(
 )
 /
 
+CREATE SEQUENCE seqResultatEvaluation
+START WITH 1
+INCREMENT BY 1
+/
+
 ----------------------------------------------
 -- TABLE Borne
 ----------------------------------------------
@@ -360,7 +454,6 @@ CREATE TABLE Borne(
 						CONSTRAINT pk_Borne_id PRIMARY KEY,
 	borneInferieure		NUMBER(5,2)
 						CONSTRAINT nn_Borne_borneInf NOT NULL
-            CONSTRAINT un_Borne_borneInf UNIQUE
 						CONSTRAINT ck_Borne_borneInf CHECK(borneInferieure >= 0.00 AND borneInferieure <= 100.00),
 	idGroupeCours		NUMBER
 						CONSTRAINT nn_Borne_idGroupeCours NOT NULL
@@ -369,6 +462,11 @@ CREATE TABLE Borne(
 						CONSTRAINT nn_Borne_idNoteLettree NOT NULL
 						CONSTRAINT pk_Borne_idNoteLettree REFERENCES NoteLettree(idNoteLettree)
 )
+/
+
+CREATE SEQUENCE seqBorne
+START WITH 1
+INCREMENT BY 1
 /
 
 ----------------------------------------------
@@ -400,6 +498,6 @@ CREATE TABLE InterfaceRegistrariat(
 						CONSTRAINT nn_IntRegist_annee NOT NULL
 						CONSTRAINT ck_IntRegist_annee CHECK(annee >= 0),
 	noteLettree			CHAR(2)
-						CONSTRAINT nn_NoteLettree_lettre NOT NULL
+						CONSTRAINT nn_IntRegist_lettre NOT NULL
 )
 /

@@ -116,7 +116,7 @@ VALUES(2, 20, 'Non', 'N', 2, 1, 1)
 /
 
 INSERT INTO GroupeCours
-VALUES(3, 10, 'Depart', 'N', 3, 2, 2)
+VALUES(3, 10, 'Depart', 'N',3, 5, 2)
 /
 
 INSERT INTO GroupeCours
@@ -247,11 +247,6 @@ INSERT INTO InscriptionCours
 VALUES(5, 1, 5, 3, 1)
 /
 
-INSERT INTO InscriptionCours
-VALUES(6, 1, 5, 3, 1)
-/
-
-
 INSERT INTO Evaluation
 VALUES(1, 'TP1', 15.00, 100.00, 'N', 1, 1)
 /
@@ -262,9 +257,4 @@ VALUES(2, 'TP2', 15.00, 100.00, 'N', 5, 1)
 
 INSERT INTO Evaluation
 VALUES(3, 'TP1', 15.00, 100.00, 'N', 5, 2)
-/
-
-UPDATE InscriptionCours
-SET idEtudiant = 3
-WHERE idEtudiant = 1
 /

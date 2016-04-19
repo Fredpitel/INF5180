@@ -559,7 +559,7 @@ END trGrCours_BIUR_enseignantDep;
 -- Vérifie que les notes finales d'un groupe cours sont générées avant d'être transférées ou diffusées
 ------------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE TRIGGER trGrCours_BUR_notesFinales
+CREATE OR REPLACE TRIGGER trGrCours_BUR_statTransNote
 BEFORE UPDATE OF statutTransfertNote OR diffusionNoteFinale ON GroupeCours
 FOR EACH ROW
 BEGIN
@@ -574,7 +574,7 @@ BEGIN
       END IF;
     END LOOP;
   END IF;
-END trGrCours_BUR_notesFinales;
+END trGrCours_BUR_statTransNote;
 /
 
 ----------------------------------------------------------

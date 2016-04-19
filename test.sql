@@ -388,6 +388,7 @@ ROLLBACK
 -- Test trEvaluation_BIR_ordreEval
 -- Force l'ordre d'apparition lors de l'insertion d'une évaluation
 
+-- OK
 -- Ordre 10, 25, 99
 INSERT INTO Evaluation
 VALUES(1, 'TP1', 25.00, 30.00, 'N', 10, 3)
@@ -412,3 +413,275 @@ ROLLBACK
 -- Test trEvaluation_BIUR_transfert
 -- Empêche la modification des évaluations une fois les notes transférées
 
+-- NOK
+INSERT INTO Evaluation
+VALUES(1, 'TP1', 25.00, 30.00, 'N', 10, 4)
+/
+
+UPDATE GroupeCours
+SET statutTransfertNote = 'Depart'
+WHERE idGroupeCours = 1
+/
+
+UPDATE Evaluation
+SET titre = 'TP3'
+WHERE idGroupeCours = 1
+AND idEvaluation = 1
+/
+
+ROLLBACK
+/
+
+-- Test trEvaluation_BDR_transfert
+-- Empêche la modification des évaluations une fois les notes transférées
+
+-- NOK
+DELETE FROM Evaluation
+WHERE idGroupeCours = 4
+/
+
+-- Test trEvaluation_BUS_idGrCours
+-- Interdit la modification du groupe cours lié à une évaluation
+
+-- NOK
+UPDATE Evaluation
+SET idGroupeCours = 2
+WHERE idGroupeCours = 1
+/
+
+-- Test trInscriptionCours_BIR_doublon
+-- Vérifie qu'un étudiant ne s'inscrit pas deux fois au même groupe-cours
+
+-- NOK
+INSERT INTO InscriptionCours
+VALUES(1, 1, 1, 1, 1)
+/
+
+-- Test trInscriptionCours_BUS_idEtud
+-- Interdit la modification de l'étudiant d'une inscription
+
+-- NOK
+UPDATE InscriptionCours
+SET idEtudiant = 2
+WHERE idEtudiant = 1
+/
+
+-- Test trInscripCours_BUIR_noteFinaleBorne
+-- Vérifie que les bornes d'un groupe cours sont choisie avant de générer les notes finales
+
+-- OK
+INSERT INTO InscriptionCours
+VALUES(1, 1, 6, 1, 1)
+/
+
+UPDATE InscriptionCours
+SET idNoteLettree = 1
+WHERE idInscriptionCours = 1
+/
+
+ROLLBACK
+/
+
+-- NOK
+INSERT INTO InscriptionCours
+VALUES(1, 1, 1, 2, 1)
+/
+
+UPDATE InscriptionCours
+SET idNoteLettree = 1
+WHERE idInscriptionCours = 5
+/
+
+-- Test trInscripCours_BUIR_noteFinalePond
+-- Vérifie que la somme des pondérations des évaluations d'un groupe cours est égale à 100.00 avant de générer les notes finales
+
+-- OK
+INSERT INTO InscriptionCours
+VALUES(1, 1, 6, 1, 1)
+/
+
+UPDATE InscriptionCours
+SET idNoteLettree = 1
+WHERE idInscriptionCours = 1
+/
+
+ROLLBACK
+/
+
+-- NOK
+INSERT INTO InscriptionCours
+VALUES(1, 1, 1, 2, 1)
+/
+
+UPDATE InscriptionCours
+SET idNoteLettree = 1
+WHERE idInscriptionCours = 5
+/
+
+-- Test trGrCours_BIUR_enseignantDep
+-- Vérifie qu'un enseignant donne un cours de son département
+
+-- OK
+INSERT INTO GroupeCours
+VALUES(5, 20, 'Non', 'N', 2, 7, 1)
+/
+
+UPDATE GroupeCours
+SET idEnseignant = 2
+WHERE idGroupeCours = 3
+/
+
+ROLLBACK
+/
+
+-- NOK
+INSERT INTO GroupeCours
+VALUES(5, 20, 'Non', 'N', 1, 7, 1)
+/
+
+UPDATE GroupeCours
+SET idEnseignant = 1
+WHERE idGroupeCours = 3
+/
+
+-- Test trGrCours_BUR_statTransNote
+-- Vérifie que les notes finales d'un groupe cours sont générées avant d'être transférées ou diffusées
+
+-- OK
+CALL generer_notes(1)
+/
+
+UPDATE GroupeCours
+SET statutTransfertNote = 'Depart'
+WHERE idGroupeCours = 1
+/
+
+UPDATE GroupeCours
+SET diffusionNoteFinale = 'O'
+WHERE idGroupeCours = 1
+/
+
+ROLLBACK
+/
+
+-- NOK
+UPDATE GroupeCours
+SET statutTransfertNote = 'Depart'
+WHERE idGroupeCours = 2
+/
+
+UPDATE GroupeCours
+SET diffusionNoteFinale = 'O'
+WHERE idGroupeCours = 2
+/
+
+-- Test trGrCours_BUS_idCours
+-- Interdit la modification du cours lié à un groupe cours
+
+-- NOK
+UPDATE GroupeCours
+SET idCours = 2
+WHERE idGroupeCours = 1
+
+
+-- Test trGrCours_BUS_idSession
+-- Interdit la modification de la session liée à un groupe cours
+
+-- NOK
+UPDATE GroupeCours
+SET idSessionUni = 2
+WHERE idGroupeCours = 1
+
+-- Test trResultatEval_BIUR_noteMax
+-- Vérifie qu'un résultat d'évaluation ne dépasse pas la note maximale de cette évaluation
+
+-- OK
+INSERT INTO ResultatEvaluation
+VALUES(5, 95.00, 1, 4)
+/
+
+UPDATE ResultatEvaluation
+SET note = 100.00
+WHERE idResultatEvaluation = 5
+/
+
+ROLLBACK
+/
+
+-- NOK
+INSERT INTO ResultatEvaluation
+VALUES(5, 95.00, 1, 1)
+/
+
+UPDATE ResultatEvaluation
+SET note = 100.00
+WHERE idResultatEvaluation = 1
+/
+
+-- Test trResultaEval_BIR_doublon
+-- Vérifie qu'un étudiant ne recoit pas deux résulats pour la même évaluation
+
+-- NOK
+
+INSERT INTO ResultatEvaluation
+VALUES(1, 26.00, 1, 1)
+/
+
+-- Test trResultatEval_BUS_idInscr
+-- Interdit la modification de l'étudiant d'un résultat d'évaluation
+
+-- NOK
+UPDATE ResultatEvaluation
+SET idInscriptionCours = 2
+WHERE idResultatEvaluation = 1
+/
+
+-- Test trResultatEval_BUS_idEval
+-- Interdit la modification de l'évaluation d'un résultat d'évaluation
+
+-- NOK
+UPDATE ResultatEvaluation
+SET idEvaluation = 2
+WHERE idResultatEvaluation = 1
+/
+
+-- Test trResultaEval_BIR_coursCoherent
+-- Vérifie que l'étudiant concerné par le résultat d'évaluation est inscrit au groupe cours de l'évaluation
+
+-- OK
+INSERT INTO ResultatEvaluation
+VALUES(1, 26.00, 2, 2)
+/
+
+ROLLBACK
+/
+
+-- NOK
+INSERT INTO ResultatEvaluation
+VALUES(1, 70.00, 1, 5)
+/
+
+-- Test trEnseignant_BUS_idEmploye
+-- Interdit la modification de l'idEmploye lié à un enseignant
+
+-- NOK
+UPDATE Enseignant
+SET idEmploye = 2
+WHERE idEnseignant = 1
+/
+
+--------------------------------
+-- Tests de la procédure stockée
+--------------------------------
+
+CALL generer_notes(1)
+/
+
+SELECT *
+FROM InscriptionCours
+WHERE idInscriptionCours = 1
+/
+
+SPOOL OFF;
+SET ECHO OFF
+SET PAGESIZE 30

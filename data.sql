@@ -124,7 +124,7 @@ VALUES(2, 20, 'Non', 'N', 2, 1, 1)
 /
 
 INSERT INTO GroupeCours
-VALUES(3, 10, 'Depart', 'N',3, 5, 2)
+VALUES(3, 10, 'Depart', 'N', NULL, 5, 2)
 /
 
 INSERT INTO GroupeCours
@@ -240,51 +240,59 @@ VALUES(12, 'E', 0.0)
 /
 
 INSERT INTO InscriptionCours
-VALUES(1, 1, 1, 1, 1)
+VALUES(1, 1, 1, NULL, 1)
 /
 
 INSERT INTO InscriptionCours
-VALUES(2, 1, 2, 1, 1)
+VALUES(2, 1, 2, NULL, 1)
 /
 
 INSERT INTO InscriptionCours
-VALUES(3, 1, 3, 2, 1)
+VALUES(3, 1, 3, NULL, 2)
 /
 
 INSERT INTO InscriptionCours
-VALUES(4, 2, 4, 3, 1)
+VALUES(4, 2, 4, NULL, 3)
 /
 
 INSERT INTO InscriptionCours
-VALUES(5, 1, 5, 3, 1)
+VALUES(5, 1, 5, NULL, 4)
 /
 
 INSERT INTO Evaluation
-VALUES(1, 'TP1', 15.00, 100.00, 'N', 1, 1)
+VALUES(1, 'TP1', 25.00, 30.00, 'N', 1, 1)
 /
 
 INSERT INTO Evaluation
-VALUES(2, 'TP2', 25.00, 100.00, 'N', 2, 1)
+VALUES(2, 'TP2', 25.00, 30.00, 'N', 2, 1)
 /
 
 INSERT INTO Evaluation
-VALUES(3, 'TP1', 15.00, 100.00, 'N', 1, 2)
+VALUES(3, 'Intra', 25.00, 100.00, 'N', 3, 1)
+/
+
+INSERT INTO Evaluation
+VALUES(4, 'Intra', 25.00, 100.00, 'N', 4, 1)
+/
+
+INSERT INTO Evaluation
+VALUES(5, 'TP1', 15.00, 100.00, 'N', 1, 2)
 /
 
 INSERT INTO ResultatEvaluation
-VALUES(1, 78.00, 1, 1)
+VALUES(1, 24.00, 1, 1)
 /
 
 INSERT INTO ResultatEvaluation
-VALUES(2, 83.00, 1, 2)
+VALUES(2, 27.00, 1, 2)
 /
 
 INSERT INTO ResultatEvaluation
-VALUES(3, 62.00, 2, 1)
+VALUES(3, 28.00, 2, 1)
 /
 
 INSERT INTO ResultatEvaluation
-VALUES(4, 92.00, 2, 2)
+VALUES(4, 92.00, 1, 3)
 /
 
 INSERT INTO Borne

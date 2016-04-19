@@ -290,6 +290,10 @@ BEGIN
     IF(borne.borneInferieure = :NEW.borneInferieure)
     THEN RAISE_APPLICATION_ERROR(-20005, 'Une borne de cette valeur existe déjà pour ce cours.');
     END IF;
+	 
+	 IF(v_valeurNoteAutre = v_valeurNote)
+	 THEN RAISE_APPLICATION_ERROR(-20006, 'Cette note lettrée déjà été attribuée à une borne pour ce groupe cours.');
+    END IF;
   END LOOP;
 END trBorne_BIUR_borneCoherentes;
 /
@@ -301,7 +305,7 @@ END trBorne_BIUR_borneCoherentes;
 CREATE OR REPLACE TRIGGER  trBorne_BUS_idGrCours
 BEFORE UPDATE OF idGroupeCours ON Borne
 BEGIN
-  RAISE_APPLICATION_ERROR(-20006, 'Il est interdit de modifier le groupe cours lié à une borne, veuillez la supprimer et créer une borne différente.');
+  RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier le groupe cours lié à une borne, veuillez la supprimer et créer une borne différente.');
 END trBorne_BUS_idGrCours;
 /
 
@@ -312,7 +316,7 @@ END trBorne_BUS_idGrCours;
 CREATE OR REPLACE TRIGGER  trBorne_BUS_idNoteLettree
 BEFORE UPDATE OF idNoteLettree ON Borne
 BEGIN
-  RAISE_APPLICATION_ERROR(-20007, 'Il est interdit de modifier la note lettrée liée à une borne, veuillez la supprimer et créer une borne différente.');
+  RAISE_APPLICATION_ERROR(-20008, 'Il est interdit de modifier la note lettrée liée à une borne, veuillez la supprimer et créer une borne différente.');
 END trBorne_BUS_idNoteLettree;
 /
 
@@ -320,8 +324,8 @@ END trBorne_BUS_idNoteLettree;
 -- Vérifie que la note lettrée peut être utiliser pour un cours selon son cycle
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE TRIGGER trBorne_BIUR_cycle
-BEFORE INSERT OR UPDATE OF idGroupeCours ON Borne
+CREATE OR REPLACE TRIGGER trBorne_BIR_cycle
+BEFORE INSERT ON Borne
 FOR EACH ROW
 DECLARE
   v_cycle Cours.cycleUni%TYPE;
@@ -336,29 +340,10 @@ BEGIN
   WHERE idNoteLettree = :NEW.idNoteLettree;
   
   IF(v_cycle > 1 AND (v_lettre = 'C-' OR v_lettre = 'D+' OR v_lettre = 'D'))
-  THEN RAISE_APPLICATION_ERROR(-20008, 'Il est interdit d''attribuer la note lettre "C-", "D+" ou "D" pour ce cours.');
+  THEN RAISE_APPLICATION_ERROR(-20009, 'Il est interdit d''attribuer la note lettre "C-", "D+" ou "D" pour ce cours.');
   END IF;
-END trBorne_BIUR_cycle;
+END trBorne_BIR_cycle;
 /
-
----------------------------------------------------------------------------------------
--- Vérifie qu'une note lettrée n'est attribué qu'à une seule borne pour un groupe-cours
----------------------------------------------------------------------------------------
-
-CREATE OR REPLACE TRIGGER trBorne_BIR_NoteLettree
-BEFORE INSERT ON Borne
-FOR EACH ROW
-DECLARE v_noteLettree Borne.idNoteLettree%TYPE;
-BEGIN
-  SELECT idNoteLettree INTO v_noteLettree
-  FROM Borne
-  WHERE idNoteLettree = :NEW.idNoteLettree
-  AND idGroupeCours = :NEW.idGroupeCours;
-  
-  RAISE_APPLICATION_ERROR(-20009, 'Cette note lettrée déjà été attribuée à une borne pour ce groupe cours.');
-  
-  EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
-END trBorne_BIR_NoteLettree;
 
 -----------------------------------------------------------------------------------------------
 -- Vérifie que la somme des pondérations des évaluations d'un groupe cous ne dépasse pas 100.00

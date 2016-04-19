@@ -442,6 +442,25 @@ BEGIN
 END trInscriptionCours_BIR_doublon;
 /
 
+--------------------------------------------------------------------------------------------------------------------
+-- Vérifie que les bornes d'un groupe cours sont choisie avant de générer les notes finales
+--------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trInscripCours_BUIR_noteFinale
+BEFORE INSERT OR UPDATE OF idNoteLettree ON InscriptionCours
+FOR EACH ROW
+DECLARE v_borneMin Borne.borneInferieure%TYPE;
+BEGIN
+  SELECT MIN(borneInferieure) INTO v_borneMin
+  FROM Borne
+  WHERE idGroupeCours = :NEW.idGroupeCours;
+            
+  IF(v_borneMin <> 0.00 AND :NEW.idNoteLettree IS NOT NULL)
+  THEN RAISE_APPLICATION_ERROR(-20010, 'Vous ne pouvez générer les notes finales sans avoir choisi toutes les bornes pour ce groupe cours au préalable.');
+  END IF;
+END trInscripCours_BUIR_noteFinale;
+/
+SHOW ERR;
 ----------------------------------------------------------------------------------
 -- Vérifie qu'un enseignant donne un cours de son département
 ----------------------------------------------------------------------------------

@@ -227,6 +227,10 @@ INSERT INTO NoteLettree
 VALUES(11, 'D', 1.0)
 /
 
+INSERT INTO NoteLettree
+VALUES(12, 'E', 0.0)
+/
+
 INSERT INTO InscriptionCours
 VALUES(1, 1, 1, 1, 1)
 /

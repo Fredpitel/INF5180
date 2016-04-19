@@ -121,26 +121,6 @@
 --
 -- Affichage des statistiques d'un groupe
 --
-<<<<<<< HEAD
- SELECT
-	AVG(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
-	OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS moyenneGroupe,
-	STDDEV(SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
-		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours)) AS ecartTypeGroupe
- FROM
- 	GroupeCours
- 	INNER JOIN Cours ON GroupeCours.idCours = Cours.idCours
- 	INNER JOIN SessionUniversitaire ON GroupeCours.idSessionUni = SessionUniversitaire.idSessionUni
- 	INNER JOIN Evaluation ON GroupeCours.idGroupeCours = Evaluation.idGroupeCours
- 	INNER JOIN ResultatEvaluation ON InscriptionCours.idInscriptionCours = ResultatEvaluation.idInscriptionCours
- WHERE
- 	Cours.sigle = 'INF5180' AND
- 	GroupeCours.noGroupe = 40 AND
- 	SessionUniversitaire.saison = 'Hiver' AND
- 	SessionUniversitaire.annee = 2016 AND
-	Evaluation.statusDiffusion = 'O'
-/
-=======
 -- SELECT
 --	SUM(ResultatEvaluation.note / Evaluation.noteMaximal * Evaluation.ponderation / 100)
 --		OVER(PARTITION BY ResultatEvaluation.idInscriptionCours) AS note
@@ -158,7 +138,6 @@
 --	GroupeCours.diffusionNoteFinale = 'O'
 -- /
 -- Il faut que l'application calcule la moyenne et l'écart type.
->>>>>>> 608c7580f8ddb5214b80c7c1df3a457540c6d192
 ----------------------------------------
 
 CREATE INDEX idx_Etudiant_codePermanent ON Etudiant(codePermanent)

@@ -256,15 +256,11 @@ VALUES(1, 'TP1', 15.00, 100.00, 'N', 1, 1)
 /
 
 INSERT INTO Evaluation
-VALUES(2, 'TP2', 15.00, 100.00, 'N', 5, 1)
+VALUES(2, 'TP2', 25.00, 100.00, 'N', 2, 1)
 /
 
 INSERT INTO Evaluation
-VALUES(3, 'TP1', 15.00, 100.00, 'N', 5, 2)
-/
-
-INSERT INTO Evaluation
-VALUES(4, 'TP3', 85.00, 100.00, 'N', 5, 1)
+VALUES(3, 'TP1', 15.00, 100.00, 'N', 1, 2)
 /
 
 INSERT INTO ResultatEvaluation
@@ -275,3 +271,58 @@ INSERT INTO ResultatEvaluation
 VALUES(2, 83.00, 1, 2)
 /
 
+INSERT INTO ResultatEvaluation
+VALUES(3, 62.00, 2, 1)
+/
+
+INSERT INTO ResultatEvaluation
+VALUES(4, 92.00, 2, 2)
+/
+
+INSERT INTO Borne
+VALUES(1, 90.00, 1, 1)
+/
+
+INSERT INTO Borne
+VALUES(2, 85.00, 1, 2)
+/
+
+INSERT INTO Borne
+VALUES(3, 80.00, 1, 3)
+/
+
+INSERT INTO Borne
+VALUES(4, 77.00, 1, 4)
+/
+
+INSERT INTO Borne
+VALUES(5, 75.00, 1, 5)
+/
+
+INSERT INTO Borne
+VALUES(6, 73.00, 1, 6)
+/
+
+INSERT INTO Borne
+VALUES(7, 70.00, 1, 7)
+/
+
+INSERT INTO Borne
+VALUES(8, 67.00, 1, 8)
+/
+
+INSERT INTO Borne
+VALUES(9, 65.00, 1, 9)
+/
+
+INSERT INTO Borne
+VALUES(10, 63.00, 1, 10)
+/
+
+INSERT INTO Borne
+VALUES(11, 60.00, 1, 11)
+/
+
+INSERT INTO Borne
+VALUES(12, 0.00, 1, 12)
+/

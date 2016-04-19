@@ -324,7 +324,6 @@ CREATE OR REPLACE TRIGGER trBorne_BIUR_cycle
 BEFORE INSERT OR UPDATE OF idGroupeCours ON Borne
 FOR EACH ROW
 DECLARE
-  v_idCours Cours.idCours%TYPE;
   v_cycle Cours.cycleUni%TYPE;
   v_lettre NoteLettree.lettre%TYPE;
 BEGIN
@@ -384,7 +383,7 @@ END BEFORE STATEMENT;
 BEFORE EACH ROW IS                                               
 BEGIN
   IF(tab_sommePonderation(:NEW.idGroupeCours) + :NEW.ponderation > 100.00)
-  THEN RAISE_APPLICATION_ERROR(-20009, 'La somme des pondérations des évaluations d''un groupe cours ne peut pas dépasser 100.00');
+  THEN RAISE_APPLICATION_ERROR(-20010, 'La somme des pondérations des évaluations d''un groupe cours ne peut pas dépasser 100.00');
   END IF;
 END BEFORE EACH ROW;
 END trEvaluation_BUIR_ponderation;
@@ -399,7 +398,7 @@ BEFORE INSERT ON Evaluation
 FOR EACH ROW
 DECLARE v_ordreMax Evaluation.ordreApparition%TYPE;
 BEGIN
-  SELECT MAX(ordreApparition) INTO  v_ordreMax
+  SELECT MAX(ordreApparition) INTO v_ordreMax
   FROM Evaluation
   WHERE idGroupeCours = :NEW.idGroupeCours;
   
@@ -426,7 +425,7 @@ BEGIN
   WHERE idGroupeCours = :NEW.idGroupeCours;
   
   IF(v_statut <> 'Non')
-  THEN RAISE_APPLICATION_ERROR(-20010, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  THEN RAISE_APPLICATION_ERROR(-20011, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
   END IF;
 END trEvaluation_BIUR_transfert;
 /
@@ -442,7 +441,7 @@ BEGIN
   WHERE idGroupeCours = :OLD.idGroupeCours;
   
   IF(v_statut <> 'Non')
-  THEN RAISE_APPLICATION_ERROR(-20010, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
+  THEN RAISE_APPLICATION_ERROR(-20011, 'Il est interdit de modifier les évaluations une fois qu''elles ont étés transférées.');
   END IF;
 END trEvaluation_BDR_transfert;
 /
@@ -454,7 +453,7 @@ END trEvaluation_BDR_transfert;
 CREATE OR REPLACE TRIGGER  trEvaluation_BUS_idGrCours
 BEFORE UPDATE OF idGroupeCours ON Evaluation
 BEGIN
-  RAISE_APPLICATION_ERROR(-20011, 'Il est interdit de modifier le groupe cours lié à une évaluation, veuillez la supprimer et créer une évaluation différente.');
+  RAISE_APPLICATION_ERROR(-20012, 'Il est interdit de modifier le groupe cours lié à une évaluation, veuillez la supprimer et créer une évaluation différente.');
 END trEvaluation_BUS_idGrCours;
 /
 
@@ -472,7 +471,7 @@ BEGIN
   WHERE idEtudiant = :NEW.idEtudiant
   AND idGroupeCours = :NEW.idGroupeCours;
   
-  RAISE_APPLICATION_ERROR(-20012, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
+  RAISE_APPLICATION_ERROR(-20013, 'Un étudiant ne peut s''inscrire plus d''une fois au même groupe cours.');
 
   EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
 END trInscriptionCours_BIR_doublon;
@@ -485,7 +484,7 @@ END trInscriptionCours_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trInscriptionCours_BUS_idEtud
 BEFORE UPDATE OF idEtudiant ON InscriptionCours
 BEGIN
-  RAISE_APPLICATION_ERROR(-20013, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
+  RAISE_APPLICATION_ERROR(-20014, 'Il est interdit de modifier l''étudiant lié à une inscription, veuillez la supprimer et créer une inscription différente.');
 END trInscriptionCours_BUS_idEtud;
 /
 
@@ -493,7 +492,7 @@ END trInscriptionCours_BUS_idEtud;
 -- Vérifie que les bornes d'un groupe cours sont choisie avant de générer les notes finales
 -------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE TRIGGER trInscripCours_BUIR_noteFinale
+CREATE OR REPLACE TRIGGER trInscripCours_BUIR_noteFinaleBorne
 BEFORE INSERT OR UPDATE OF idNoteLettree ON InscriptionCours
 FOR EACH ROW
 DECLARE 
@@ -511,7 +510,7 @@ BEGIN
 	  WHERE GroupeCours.idCours = Cours.idCours;
 	  
 	  IF((v_cycle = 1 AND v_nombreBorne <> 12) OR (v_cycle > 1 AND v_nombreBorne <> 9))
-	  THEN THEN RAISE_APPLICATION_ERROR(-20014, 'Vous ne pouvez générer les notes finales sans avoir choisi toutes les bornes pour ce groupe cours au préalable.');
+	  THEN THEN RAISE_APPLICATION_ERROR(-20015, 'Vous ne pouvez générer les notes finales sans avoir choisi toutes les bornes pour ce groupe cours au préalable.');
 	  END IF;
 	  
 	  SELECT MIN(borneInferieure) INTO v_borneMin
@@ -519,11 +518,32 @@ BEGIN
 	  WHERE idGroupeCours = :NEW.idGroupeCours;
 	  
 	  IF(v_borneMin <> 0.00)
-	  THEN RAISE_APPLICATION_ERROR(-20014, 'Vous ne pouvez générer les notes finales sans avoir choisi toutes les bornes pour ce groupe cours au préalable.');
+	  THEN RAISE_APPLICATION_ERROR(-20016, 'Les bornes choisies ne couvrent pas l''ensemble des notes possibles.');
 	  END IF;
 	END IF;
-END trInscripCours_BUIR_noteFinale;
+END trInscripCours_BUIR_noteFinaleBorne;
 /
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Vérifie que la somme des pondérations des évaluations d'un groupe cours est égale à 100.00 avant de générer les notes finales
+--------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER trInscripCours_BUIR_noteFinalePond
+BEFORE INSERT OR UPDATE OF idNoteLettree ON InscriptionCours
+FOR EACH ROW
+DECLARE v_sommePonderation Evaluation.ponderation%TYPE;
+BEGIN
+  SELECT SUM(ponderation) INTO v_sommePonderation
+  FROM Evaluation
+  WHERE idGroupeCours = :NEW.idGroupeCours;
+  
+  IF(v_sommePonderation <> 100.00)
+  THEN RAISE_APPLICATION_ERROR(-20017, 'Impossible de générer la note finale car la somme des pondérations des évaluations pour ce groupe cours n''atteint pas 100.00.');
+  END IF;
+  
+  EXCEPTION WHEN NO_DATA_FOUND
+  THEN RAISE_APPLICATION_ERROR(-20017, 'Impossible de générer la note finale car la somme des pondérations des évaluations pour ce groupe cours n''atteint pas 100.00.');
+END trInscripCours_BUIR_noteFinalePond;
 
 -------------------------------------------------------------
 -- Vérifie qu'un enseignant donne un cours de son département
@@ -545,27 +565,27 @@ BEGIN
   WHERE Employe.idEmploye = Enseignant.idEmploye;
 
   IF(v_depCours <> v_depEnseignant)
-  THEN RAISE_APPLICATION_ERROR(-20015, 'Un enseignant doit donner un cours rattaché à son département.');
+  THEN RAISE_APPLICATION_ERROR(-20018, 'Un enseignant doit donner un cours rattaché à son département.');
   END IF;
 END trGrCours_BIUR_enseignantDep;
 /
 
------------------------------------------------------------------------------------------
--- Vérifie que les notes finales d'un groupe cours sont générées avant d'être transférées
------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
+-- Vérifie que les notes finales d'un groupe cours sont générées avant d'être transférées ou diffusées
+------------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TRIGGER trGrCours_BUR_notesFinales
-BEFORE UPDATE OF statutTransfertNote ON GroupeCours
+BEFORE UPDATE OF statutTransfertNote OR diffusionNoteFinale ON GroupeCours
 FOR EACH ROW
 BEGIN
-  IF(:NEW.statutTransfertNote <> 'Non')
+  IF(:NEW.statutTransfertNote <> 'Non' OR :NEW.diffusionNoteFinale <> 'N')
   THEN
     FOR note IN (SELECT idNoteLettree
                  FROM InscriptionCours
                  WHERE idGroupeCours = :NEW.idGroupeCours)
     LOOP
       IF(note.idNoteLettree IS NULL)
-      THEN RAISE_APPLICATION_ERROR(-20016, 'Les notes finales d''un groupe cours doivent être générées avant d''être transférées.');
+      THEN RAISE_APPLICATION_ERROR(-20019, 'Les notes finales d''un groupe cours doivent être générées avant d''être transférées ou diffusées.');
       END IF;
     END LOOP;
   END IF;
@@ -579,7 +599,7 @@ END trGrCours_BUR_notesFinales;
 CREATE OR REPLACE TRIGGER  trGrCours_BUS_idCours
 BEFORE UPDATE OF idCours ON GroupeCours
 BEGIN
-  RAISE_APPLICATION_ERROR(-20017, 'Il est interdit de modifier le lié à un groupe cours, veuillez le supprimer et créer un groupe cours différent.');
+  RAISE_APPLICATION_ERROR(-20020, 'Il est interdit de modifier le lié à un groupe cours, veuillez le supprimer et créer un groupe cours différent.');
 END trGrCours_BUS_idCours;
 /
 
@@ -590,7 +610,7 @@ END trGrCours_BUS_idCours;
 CREATE OR REPLACE TRIGGER  trGrCours_BUS_idSession
 BEFORE UPDATE OF idSessionUni ON GroupeCours
 BEGIN
-  RAISE_APPLICATION_ERROR(-20018, 'Il est interdit de modifier la session liée à un groupe cours, veuillez le supprimer et créer un groupe cours différent.');
+  RAISE_APPLICATION_ERROR(-20021, 'Il est interdit de modifier la session liée à un groupe cours, veuillez le supprimer et créer un groupe cours différent.');
 END trGrCours_BUS_idSession;
 /
 
@@ -609,7 +629,7 @@ BEGIN
   WHERE idEvaluation = :NEW.idEvaluation;
   
   IF(:NEW.note > v_noteMax)
-  THEN RAISE_APPLICATION_ERROR(-20019, 'La note entrée dépasse la note maximale pour cette évaluation.');
+  THEN RAISE_APPLICATION_ERROR(-20022, 'La note entrée dépasse la note maximale pour cette évaluation.');
   END IF;
 END trResultatEval_BIUR_noteMax;
 /
@@ -628,7 +648,7 @@ BEGIN
   WHERE idInscriptionCours = :NEW.idInscriptionCours
   AND idGroupeCours = :NEW.idGroupeCours;
   
-  RAISE_APPLICATION_ERROR(-20020, 'Cet étudiant a déjà un résultat pour cette évalutation.');
+  RAISE_APPLICATION_ERROR(-20023, 'Cet étudiant a déjà un résultat pour cette évalutation.');
 
   EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
 END trResultaEval_BIR_doublon;
@@ -641,7 +661,7 @@ END trResultaEval_BIR_doublon;
 CREATE OR REPLACE TRIGGER  trResultatEval_BUS_idInscr
 BEFORE UPDATE OF idInscriptionCours ON ResultatEvaluation
 BEGIN
-  RAISE_APPLICATION_ERROR(-20021, 'Il est interdit de modifier l''étudiant lié à un résultat d''évaluation, veuillez le supprimer et créer un résultat différent.');
+  RAISE_APPLICATION_ERROR(-20024, 'Il est interdit de modifier l''étudiant lié à un résultat d''évaluation, veuillez le supprimer et créer un résultat différent.');
 END trResultatEval_BUS_idInscr;
 /
 
@@ -652,7 +672,7 @@ END trResultatEval_BUS_idInscr;
 CREATE OR REPLACE TRIGGER  trResultatEval_BUS_idEval
 BEFORE UPDATE OF idEvaluation ON ResultatEvaluation
 BEGIN
-  RAISE_APPLICATION_ERROR(-20022, 'Il est interdit de modifier l''évaluation liée à un résultat d''évaluation, veuillez le supprimer et créer un résultat différent.');
+  RAISE_APPLICATION_ERROR(-20025, 'Il est interdit de modifier l''évaluation liée à un résultat d''évaluation, veuillez le supprimer et créer un résultat différent.');
 END trResultatEval_BUS_idEval;
 /
 
@@ -676,7 +696,7 @@ BEGIN
   WHERE idEvaluation = :NEW.idEvaluation;
   
   IF(v_idGrCoursInscr <> v_idGrCoursEval)
-  THEN RAISE_APPLICATION_ERROR(-20023, 'Cet étudiant n''est pas inscrit à ce cours.');
+  THEN RAISE_APPLICATION_ERROR(-20026, 'Cet étudiant n''est pas inscrit à ce groupe cours.');
   END IF;
 END trResultaEval_BIR_coursCoherent;
 
@@ -687,6 +707,6 @@ END trResultaEval_BIR_coursCoherent;
 CREATE OR REPLACE TRIGGER  trEnseignant_BUS_idEmploye
 BEFORE UPDATE OF idEmploye ON Enseignant
 BEGIN
-  RAISE_APPLICATION_ERROR(-20024, 'Il est interdit de modifier l''employé lié à un enseignant, veuillez le supprimer et créer un employé différent.');
+  RAISE_APPLICATION_ERROR(-20027, 'Il est interdit de modifier l''employé lié à un enseignant, veuillez le supprimer et créer un enseignant différent.');
 END trEnseignant_BUS_idEmploye;
 /

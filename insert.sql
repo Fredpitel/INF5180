@@ -267,8 +267,11 @@ INSERT INTO Evaluation
 VALUES(4, 'TP3', 85.00, 100.00, 'N', 5, 1)
 /
 
-UPDATE Evaluation
-SET ponderation = 85.00
-WHERE idEvaluation = 2
+INSERT INTO ResultatEvaluation
+VALUES(1, 78.00, 1, 1)
+/
+
+INSERT INTO ResultatEvaluation
+VALUES(2, 83.00, 1, 2)
 /
 

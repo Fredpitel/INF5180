@@ -189,7 +189,7 @@ CREATE TABLE Employe(
 						CONSTRAINT un_Employe_codeMS UNIQUE,
 	motDePasse			CHAR(8)
 						CONSTRAINT nn_Employe_motDePasse NOT NULL
-						CONSTRAINT ck_Employe_motDePasse CHECK(REGEXP_LIKE(motDePasse, '^[A-Z0-9]{8}$')),
+						CONSTRAINT ck_Employe_motDePasse CHECK(REGEXP_LIKE(motDePasse, '^[a-zA-Z0-9]{8}$')),
 	idDepartement		NUMBER
 						CONSTRAINT nn_Employe_idDepartement NOT NULL
 						CONSTRAINT fk_Employe_idDepartement REFERENCES Departement(idDepartement)

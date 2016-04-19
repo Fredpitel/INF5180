@@ -1,3 +1,12 @@
+----------------------------------------
+-- Jeu de données pour les tests
+----------------------------------------
+
+SET LINESIZE 160
+SET ECHO ON
+
+SPOOL data.out;
+
 INSERT INTO SessionUniversitaire
 VALUES(1, 'Hiver', 2016, SYSDATE)
 /
@@ -37,7 +46,6 @@ VALUES(3, 'INF7180', 'Base de données avancé', 2, 1)
 INSERT INTO Cours
 VALUES(4, 'INF9180', 'Base de données nucléaire', 3, 1)
 /
-
 
 INSERT INTO Cours
 VALUES(5, 'BIO1111', 'Anatomie', 1, 2)
@@ -326,3 +334,10 @@ VALUES(11, 60.00, 1, 11)
 INSERT INTO Borne
 VALUES(12, 0.00, 1, 12)
 /
+
+COMMIT
+/
+
+SPOOL OFF;
+SET ECHO OFF
+SET PAGESIZE 30

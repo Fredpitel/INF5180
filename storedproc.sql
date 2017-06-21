@@ -9,14 +9,14 @@ IS
   
 BEGIN
   FOR inscription IN (SELECT idInscriptionCours
-                                  FROM InscriptionCours
-                                  WHERE idGroupeCours = v_idGroupeCours)
+                      FROM InscriptionCours
+                      WHERE idGroupeCours = v_idGroupeCours)
   LOOP
     v_notePonderee := 0;
     
     FOR evaluation IN (SELECT idEvaluation, noteMaximal, ponderation
-                                       FROM Evaluation
-                                       WHERE idGroupeCours = v_idGroupeCours)
+                       FROM Evaluation
+                       WHERE idGroupeCours = v_idGroupeCours)
     LOOP
       SELECT note INTO v_noteObtenue
       FROM ResultatEvaluation

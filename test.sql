@@ -674,7 +674,7 @@ WHERE idEnseignant = 1
 -- Tests de la procédure stockée
 --------------------------------
 
-CALL generer_notes(1)
+BEGIN generer_notes(1)
 /
 
 SELECT *
@@ -684,4 +684,4 @@ WHERE idInscriptionCours = 1
 
 SPOOL OFF;
 SET ECHO OFF
-SET PAGESIZE 30
+SET PAGESIZE 30inf51
